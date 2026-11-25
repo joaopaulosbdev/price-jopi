@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   HelpCircle,
   SlidersHorizontal,
+  Edit3,
 } from 'lucide-react'
 import { Product } from '@/types/product'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -26,12 +27,14 @@ import PriceChart from './PriceChart'
 interface ProductCardProps {
   product: Product
   onAddPrice: (product: Product) => void
+  onEdit: (product: Product) => void
   onDelete: (id: string) => void
 }
 
 export default function ProductCard({
   product,
   onAddPrice,
+  onEdit,
   onDelete,
 }: ProductCardProps) {
   const [showHistory, setShowHistory] = useState(false)
@@ -228,13 +231,15 @@ export default function ProductCard({
           </div>
         </div>
 
-        {/* Gráfico do Histórico com Range */}
+        {/* Gráfico do Histórico com Range e Pontos Clicáveis */}
         <div className="p-5 pt-3">
           <PriceChart
+            productName={product.name}
             history={product.priceHistory}
             targetPrice={product.targetPrice}
             minPriceRange={product.minPriceRange}
             maxPriceRange={product.maxPriceRange}
+            storeLinks={autoStoreLinks}
           />
 
           {/* Botão de Expansão da Tabela de Registros */}
@@ -296,13 +301,22 @@ export default function ProductCard({
 
       {/* Ações do Card */}
       <div className="p-4 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between gap-2">
-        <button
-          onClick={() => onDelete(product.id)}
-          className="p-2 rounded-xl text-neutral-500 hover:text-rose-400 hover:bg-rose-950/40 transition"
-          title="Excluir item monitorado"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => onEdit(product)}
+            className="p-2 rounded-xl text-neutral-400 hover:text-blue-400 hover:bg-neutral-800 transition"
+            title="Editar item (nome, marca, range, preço alvo)"
+          >
+            <Edit3 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onDelete(product.id)}
+            className="p-2 rounded-xl text-neutral-500 hover:text-rose-400 hover:bg-rose-950/40 transition"
+            title="Excluir item monitorado"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
 
         <button
           onClick={() => onAddPrice(product)}

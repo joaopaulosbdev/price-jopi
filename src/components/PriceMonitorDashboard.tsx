@@ -20,6 +20,7 @@ import { Product } from '@/types/product'
 import ProductCard from '@/components/ProductCard'
 import NewProductModal from '@/components/NewProductModal'
 import UpdatePriceModal from '@/components/UpdatePriceModal'
+import EditProductModal from '@/components/EditProductModal'
 import { storage } from '@/lib/storage'
 import { requestNotificationPermission, sendPriceAlertNotification } from '@/lib/notifications'
 
@@ -36,6 +37,7 @@ export default function PriceMonitorDashboard() {
   // Modais
   const [isNewModalOpen, setIsNewModalOpen] = useState(false)
   const [selectedProductForPrice, setSelectedProductForPrice] = useState<Product | null>(null)
+  const [selectedProductForEdit, setSelectedProductForEdit] = useState<Product | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   // Carregar produtos
@@ -394,6 +396,7 @@ export default function PriceMonitorDashboard() {
                 key={product.id}
                 product={product}
                 onAddPrice={(prod) => setSelectedProductForPrice(prod)}
+                onEdit={(prod) => setSelectedProductForEdit(prod)}
                 onDelete={handleDelete}
               />
             ))}
@@ -430,6 +433,17 @@ export default function PriceMonitorDashboard() {
             showToast('Nova cotação registrada no histórico!')
           }
         }}
+      />
+
+      <EditProductModal
+        product={selectedProductForEdit}
+        isOpen={!!selectedProductForEdit}
+        onClose={() => setSelectedProductForEdit(null)}
+        onSuccess={() => {
+          loadProducts()
+          showToast('Item atualizado com sucesso!')
+        }}
+        existingBrands={brands}
       />
     </div>
   )

@@ -236,6 +236,34 @@ export const storage = {
     return { updated, hitTarget }
   },
 
+  updateProduct: (
+    productId: string,
+    updates: Partial<{
+      name: string
+      brand: string | null
+      category: string | null
+      minPriceRange: number | null
+      maxPriceRange: number | null
+      targetPrice: number | null
+      notes: string | null
+    }>
+  ): Product[] => {
+    const currentList = storage.getProducts()
+    const now = new Date().toISOString()
+
+    const updated = currentList.map((p) => {
+      if (p.id !== productId) return p
+      return {
+        ...p,
+        ...updates,
+        updatedAt: now,
+      }
+    })
+
+    storage.saveProducts(updated)
+    return updated
+  },
+
   deleteProduct: (productId: string): Product[] => {
     const currentList = storage.getProducts()
     const updated = currentList.filter((p) => p.id !== productId)
