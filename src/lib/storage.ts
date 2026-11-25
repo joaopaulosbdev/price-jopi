@@ -8,7 +8,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Games & Consoles',
     targetPrice: 3400.0,
     imageUrl: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=400&q=80',
-    storeUrl: 'https://www.playstation.com',
     notes: 'Edição com leitor de disco',
     currentPrice: 3499.00,
     lowestPrice: 3499.00,
@@ -53,7 +52,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Smartphones',
     targetPrice: 4500.0,
     imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=400&q=80',
-    storeUrl: 'https://www.apple.com',
     notes: 'Cor Preto',
     currentPrice: 4799.00,
     lowestPrice: 4799.00,
@@ -91,7 +89,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Áudio',
     targetPrice: 1900.0,
     imageUrl: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=400&q=80',
-    storeUrl: 'https://www.sony.com',
     notes: 'Melhor ANC do mercado',
     currentPrice: 1989.00,
     lowestPrice: 1989.00,
@@ -129,7 +126,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Informática',
     targetPrice: 1500.0,
     imageUrl: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=400&q=80',
-    storeUrl: 'https://www.samsung.com',
     notes: 'G-Sync compatível',
     currentPrice: 1499.00,
     lowestPrice: 1499.00,
@@ -174,7 +170,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Eletrodomésticos',
     targetPrice: 400.0,
     imageUrl: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=400&q=80',
-    storeUrl: 'https://www.nespresso.com',
     notes: 'Cafés longos e expressos',
     currentPrice: 429.00,
     lowestPrice: 429.00,
@@ -207,7 +202,7 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
 ]
 
-const STORAGE_KEY = 'pricetracker_products_v1'
+const STORAGE_KEY = 'pricetracker_products_v2'
 
 export const storage = {
   getProducts: (): Product[] => {
@@ -233,28 +228,30 @@ export const storage = {
     }
   },
 
-  addProduct: (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'lowestPrice' | 'highestPrice' | 'priceHistory'> & { storeName?: string }): Product => {
+  addProduct: (productData: {
+    name: string
+    brand?: string | null
+    category?: string | null
+    targetPrice?: number | null
+    notes?: string | null
+  }): Product => {
     const currentList = storage.getProducts()
     const id = 'prod-' + Date.now()
     const now = new Date().toISOString()
-    
+
     const newProduct: Product = {
-      ...productData,
       id,
-      lowestPrice: productData.currentPrice,
-      highestPrice: productData.currentPrice,
+      name: productData.name,
+      brand: productData.brand || null,
+      category: productData.category || null,
+      targetPrice: productData.targetPrice || null,
+      notes: productData.notes || null,
+      currentPrice: null,
+      lowestPrice: null,
+      highestPrice: null,
       createdAt: now,
       updatedAt: now,
-      priceHistory: [
-        {
-          id: 'h-' + Date.now(),
-          productId: id,
-          price: productData.currentPrice,
-          storeName: productData.storeName || null,
-          recordedAt: now,
-          notes: 'Preço inicial registrado',
-        },
-      ],
+      priceHistory: [],
     }
 
     const updated = [newProduct, ...currentList]
@@ -274,7 +271,8 @@ export const storage = {
         hitTarget = true
       }
 
-      const allPrices = [...p.priceHistory.map((h) => h.price), price]
+      const existingPrices = (p.priceHistory || []).map((h) => h.price)
+      const allPrices = [...existingPrices, price]
       const lowestPrice = Math.min(...allPrices)
       const highestPrice = Math.max(...allPrices)
 
@@ -293,7 +291,7 @@ export const storage = {
         lowestPrice,
         highestPrice,
         updatedAt: now,
-        priceHistory: [...p.priceHistory, newHistoryItem],
+        priceHistory: [...(p.priceHistory || []), newHistoryItem],
       }
     })
 

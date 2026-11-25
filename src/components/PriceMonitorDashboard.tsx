@@ -72,7 +72,7 @@ export default function PriceMonitorDashboard() {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q) ||
+          (p.brand && p.brand.toLowerCase().includes(q)) ||
           (p.category && p.category.toLowerCase().includes(q))
       )
     }
@@ -111,7 +111,9 @@ export default function PriceMonitorDashboard() {
   // Lista de marcas únicas
   const brands = useMemo(() => {
     const set = new Set<string>()
-    products.forEach((p) => set.add(p.brand))
+    products.forEach((p) => {
+      if (p.brand) set.add(p.brand)
+    })
     return Array.from(set).sort()
   }, [products])
 
@@ -128,7 +130,7 @@ export default function PriceMonitorDashboard() {
   const stats = useMemo(() => {
     const total = products.length
     const reachedTargetCount = products.filter(
-      (p) => p.targetPrice && p.currentPrice <= p.targetPrice
+      (p) => p.targetPrice && p.currentPrice !== null && p.currentPrice <= p.targetPrice
     ).length
     return { total, reachedTargetCount }
   }, [products])
@@ -416,10 +418,10 @@ export default function PriceMonitorDashboard() {
         onClose={() => setSelectedProductForPrice(null)}
         onSuccess={(hitTarget) => {
           loadProducts()
-          if (hitTarget && selectedProductForPrice) {
+          if (hitTarget && selectedProductForPrice && selectedProductForPrice.currentPrice !== null) {
             sendPriceAlertNotification(
               selectedProductForPrice.name,
-              selectedProductForPrice.brand,
+              selectedProductForPrice.brand || 'Sem marca',
               selectedProductForPrice.currentPrice,
               selectedProductForPrice.targetPrice || 0
             )

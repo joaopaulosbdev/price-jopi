@@ -10,15 +10,15 @@ export interface PriceHistory {
 export interface Product {
   id: string
   name: string
-  brand: string
+  brand?: string | null
   category?: string | null
   targetPrice?: number | null
   imageUrl?: string | null
   storeUrl?: string | null
   notes?: string | null
-  currentPrice: number
-  lowestPrice: number
-  highestPrice: number
+  currentPrice: number | null
+  lowestPrice: number | null
+  highestPrice: number | null
   createdAt: string
   updatedAt: string
   priceHistory: PriceHistory[]

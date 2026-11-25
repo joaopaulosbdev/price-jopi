@@ -78,8 +78,8 @@ export default function UpdatePriceModal({
         <div className="mt-3 p-3 bg-neutral-950/60 border border-neutral-800/80 rounded-xl text-xs space-y-1">
           <p className="font-semibold text-neutral-200 truncate">{product.name}</p>
           <div className="flex justify-between text-neutral-400">
-            <span>Marca: <strong className="text-neutral-300">{product.brand}</strong></span>
-            <span>Preço Atual: <strong className="text-blue-400">{formatCurrency(product.currentPrice)}</strong></span>
+            <span>Marca: <strong className="text-neutral-300">{product.brand || 'Não especificada'}</strong></span>
+            <span>Preço Atual: <strong className="text-blue-400">{product.currentPrice !== null ? formatCurrency(product.currentPrice) : 'Ainda sem registro'}</strong></span>
           </div>
           {product.targetPrice && (
             <p className="text-emerald-400">
