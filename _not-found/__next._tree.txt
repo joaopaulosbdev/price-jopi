@@ -1,4 +1,4 @@
-:HL["/price-jopi/_next/static/chunks/2at7s4k03ot4v.css","style"]
+:HL["/price-jopi/_next/static/chunks/2396ith3gkeu3.css","style"]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"/_not-found","h":96,"c":"$Q2"}]]
-0:{"b":"erFLjTPdwINrAtVZ3xlWI","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"kLrKmP0QBfiVl7sM0vPLG","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
