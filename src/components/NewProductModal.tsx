@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X, PlusCircle, AlertCircle } from 'lucide-react'
+import { X, PlusCircle, AlertCircle, Sparkles } from 'lucide-react'
 import { storage } from '@/lib/storage'
+import { generateStoreLinks } from '@/lib/storeLinks'
 
 interface NewProductModalProps {
   isOpen: boolean
@@ -24,25 +25,24 @@ export default function NewProductModal({
   const [currentPrice, setCurrentPrice] = useState('')
   const [targetPrice, setTargetPrice] = useState('')
   const [storeName, setStoreName] = useState('')
-  const [storeUrl, setStoreUrl] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   if (!isOpen) return null
 
+  const effectiveBrand = brand === '__new__' ? customBrand.trim() : brand.trim()
+  const previewLinks = name.trim() ? generateStoreLinks(name.trim(), effectiveBrand) : []
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
-    const finalBrand = brand === '__new__' ? customBrand.trim() : brand.trim()
-
     if (!name.trim()) {
-      setError('Informe o nome do item')
+      setError('Informe o nome ou palavras-chave do item')
       return
     }
-    if (!finalBrand) {
+    if (!effectiveBrand) {
       setError('Informe ou selecione a marca')
       return
     }
@@ -56,13 +56,11 @@ export default function NewProductModal({
     try {
       storage.addProduct({
         name: name.trim(),
-        brand: finalBrand,
+        brand: effectiveBrand,
         category: category.trim() || undefined,
         currentPrice: Number(currentPrice),
         targetPrice: targetPrice ? Number(targetPrice) : undefined,
         storeName: storeName.trim() || undefined,
-        storeUrl: storeUrl.trim() || undefined,
-        imageUrl: imageUrl.trim() || undefined,
         notes: notes.trim() || undefined,
       })
 
@@ -74,8 +72,6 @@ export default function NewProductModal({
       setCurrentPrice('')
       setTargetPrice('')
       setStoreName('')
-      setStoreUrl('')
-      setImageUrl('')
       setNotes('')
 
       onSuccess()
@@ -103,6 +99,13 @@ export default function NewProductModal({
           </button>
         </div>
 
+        <div className="mt-3 p-3 bg-blue-950/40 border border-blue-800/50 rounded-xl text-xs text-blue-300 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-blue-400 shrink-0" />
+          <span>
+            <strong>Busca Automática:</strong> Não precisa colar links! O sistema gera links diretos para <strong>Mercado Livre, Amazon, Google Shopping, Buscapé e Kabum</strong> com base no nome e marca.
+          </span>
+        </div>
+
         {error && (
           <div className="mt-4 p-3 bg-red-950/50 border border-red-800/80 rounded-xl text-red-300 text-sm flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -113,12 +116,12 @@ export default function NewProductModal({
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
             <label className="block text-xs font-medium text-neutral-400 mb-1">
-              Nome do Item / Modelo *
+              Nome do Item / Palavras-chave *
             </label>
             <input
               type="text"
               required
-              placeholder="ex: Monitor 27'' 144Hz ou Smartphone Galaxy S24"
+              placeholder="ex: Monitor 27'' 144Hz, Galaxy S24 Ultra, RTX 4070..."
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
@@ -160,7 +163,7 @@ export default function NewProductModal({
               </label>
               <input
                 type="text"
-                placeholder="ex: Informática, Games, Áudio"
+                placeholder="ex: Informática, Games, Áudio..."
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
@@ -171,7 +174,7 @@ export default function NewProductModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-neutral-400 mb-1">
-                Preço Atual (R$) *
+                Preço Atual Identificado (R$) *
               </label>
               <input
                 type="number"
@@ -181,79 +184,70 @@ export default function NewProductModal({
                 placeholder="0,00"
                 value={currentPrice}
                 onChange={(e) => setCurrentPrice(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
+                className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm font-semibold"
               />
             </div>
 
             <div>
               <label className="block text-xs font-medium text-neutral-400 mb-1">
-                Preço Alvo / Meta (R$)
+                Preço Alvo / Meta de Notificação (R$)
               </label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="ex: 1500 (recebe badge de meta)"
+                placeholder="ex: 1500 (ativa alerta sonoro/navegador)"
                 value={targetPrice}
                 onChange={(e) => setTargetPrice(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">
-                Loja onde viu o preço
-              </label>
-              <input
-                type="text"
-                placeholder="ex: Amazon, Mercado Livre, Kabum"
-                value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">
-                Link do Produto (URL)
-              </label>
-              <input
-                type="url"
-                placeholder="https://..."
-                value={storeUrl}
-                onChange={(e) => setStoreUrl(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
+                className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-emerald-500 text-sm font-semibold text-emerald-400"
               />
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-medium text-neutral-400 mb-1">
-              URL da Imagem (opcional)
+              Loja de Referência (opcional)
             </label>
             <input
-              type="url"
-              placeholder="https://... link de imagem jpg/png"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
+              type="text"
+              placeholder="ex: Amazon, Mercado Livre, Kabum"
+              value={storeName}
+              onChange={(e) => setStoreName(e.target.value)}
+              className="w-full px-3.5 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
             />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-neutral-400 mb-1">
-              Observações / Notas
+              Observações / Detalhes do Modelo
             </label>
             <textarea
               rows={2}
-              placeholder="ex: Especificação especial, garantia estendida, cor preta..."
+              placeholder="ex: Cor preta, 110V, 16GB RAM..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3.5 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
             />
           </div>
+
+          {/* Pré-visualização dos links que o sistema irá gerar */}
+          {name.trim() && (
+            <div className="p-3 bg-neutral-950 rounded-xl border border-neutral-800">
+              <span className="text-[11px] text-neutral-400 block mb-1.5 font-medium">
+                Links gerados automaticamente para pesquisa rápida:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {previewLinks.map((p) => (
+                  <span
+                    key={p.storeName}
+                    className="text-[11px] px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300"
+                  >
+                    🔍 {p.badgeText}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-3 border-t border-neutral-800">
             <button

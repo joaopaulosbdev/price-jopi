@@ -13,12 +13,15 @@ import {
   Sparkles,
   RefreshCw,
   RotateCcw,
+  Bell,
+  BellRing,
 } from 'lucide-react'
 import { Product } from '@/types/product'
 import ProductCard from '@/components/ProductCard'
 import NewProductModal from '@/components/NewProductModal'
 import UpdatePriceModal from '@/components/UpdatePriceModal'
 import { storage } from '@/lib/storage'
+import { requestNotificationPermission, sendPriceAlertNotification } from '@/lib/notifications'
 
 export default function PriceMonitorDashboard() {
   const [products, setProducts] = useState<Product[]>([])
@@ -28,13 +31,14 @@ export default function PriceMonitorDashboard() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState('updatedAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
 
   // Modais
   const [isNewModalOpen, setIsNewModalOpen] = useState(false)
   const [selectedProductForPrice, setSelectedProductForPrice] = useState<Product | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
-  // Carregar produtos do storage local (compatível com GitHub Pages e modo estático)
+  // Carregar produtos
   const loadProducts = () => {
     setLoading(true)
     const list = storage.getProducts()
@@ -44,7 +48,20 @@ export default function PriceMonitorDashboard() {
 
   useEffect(() => {
     loadProducts()
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setNotificationsEnabled(Notification.permission === 'granted')
+    }
   }, [])
+
+  const handleEnableNotifications = async () => {
+    const granted = await requestNotificationPermission()
+    setNotificationsEnabled(granted)
+    if (granted) {
+      showToast('🔔 Notificações ativadas! Você será avisado quando um item atingir o preço alvo.')
+    } else {
+      showToast('⚠️ Permissão de notificações não concedida no navegador.')
+    }
+  }
 
   // Filtragem e ordenação no cliente
   const filteredProducts = useMemo(() => {
@@ -118,7 +135,7 @@ export default function PriceMonitorDashboard() {
 
   const showToast = (msg: string) => {
     setToastMessage(msg)
-    setTimeout(() => setToastMessage(null), 4000)
+    setTimeout(() => setToastMessage(null), 4500)
   }
 
   const handleDelete = (id: string) => {
@@ -154,15 +171,38 @@ export default function PriceMonitorDashboard() {
             </div>
             <div>
               <h1 className="font-bold text-lg leading-tight tracking-tight text-white flex items-center gap-2">
-                PriceTracker <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">GitHub Pages</span>
+                PriceTracker <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Auto Links & Alertas</span>
               </h1>
               <p className="text-[11px] text-neutral-400">
-                Monitore produtos, acompanhe por marca e receba histórico
+                Links automáticos para Mercado Livre, Amazon, Buscapé e alertas de preço alvo
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Botão de Notificações */}
+            <button
+              onClick={handleEnableNotifications}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition ${
+                notificationsEnabled
+                  ? 'bg-emerald-950/40 border-emerald-700/60 text-emerald-400'
+                  : 'bg-neutral-900 border-neutral-700 text-neutral-300 hover:text-white hover:border-neutral-600'
+              }`}
+              title="Ativar/Verificar notificações no navegador"
+            >
+              {notificationsEnabled ? (
+                <>
+                  <BellRing className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Alertas Ativos</span>
+                </>
+              ) : (
+                <>
+                  <Bell className="w-3.5 h-3.5" />
+                  <span>Ativar Alertas</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={handleReset}
               className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80 rounded-xl transition"
@@ -170,6 +210,7 @@ export default function PriceMonitorDashboard() {
             >
               <RotateCcw className="w-4 h-4" />
             </button>
+
             <button
               onClick={() => setIsNewModalOpen(true)}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-blue-500/25 flex items-center gap-1.5"
@@ -183,6 +224,26 @@ export default function PriceMonitorDashboard() {
 
       {/* Conteúdo Principal */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+        {/* Banner Informativo dos Links Automáticos */}
+        <div className="p-4 bg-gradient-to-r from-blue-950/40 via-neutral-900/60 to-purple-950/30 border border-blue-900/40 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-neutral-300">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-lg bg-blue-500/20 text-blue-400 shrink-0">
+              ⚡
+            </span>
+            <span>
+              <strong>Links automáticos ativos:</strong> Você não precisa colar links de produtos! Cadastre apenas o <strong>nome</strong> e a <strong>marca</strong>, e o site gera links diretos para <strong>Mercado Livre, Amazon, Google Shopping, Buscapé e Kabum</strong>.
+            </span>
+          </div>
+          {!notificationsEnabled && (
+            <button
+              onClick={handleEnableNotifications}
+              className="shrink-0 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition"
+            >
+              Permitir Alertas Sonoros
+            </button>
+          )}
+        </div>
+
         {/* Painel de Métricas Rápidas */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 bg-neutral-900/50 border border-neutral-800/80 rounded-2xl flex items-center gap-4">
@@ -225,7 +286,7 @@ export default function PriceMonitorDashboard() {
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input
               type="text"
-              placeholder="Buscar por nome do produto, modelo ou palavra-chave..."
+              placeholder="Buscar por palavras-chave (ex: Sony, PS5, Monitor, Apple)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 transition"
@@ -344,7 +405,7 @@ export default function PriceMonitorDashboard() {
         onClose={() => setIsNewModalOpen(false)}
         onSuccess={() => {
           loadProducts()
-          showToast('Novo item cadastrado com sucesso!')
+          showToast('Novo item cadastrado com busca automática de lojas!')
         }}
         existingBrands={brands}
       />
@@ -355,8 +416,14 @@ export default function PriceMonitorDashboard() {
         onClose={() => setSelectedProductForPrice(null)}
         onSuccess={(hitTarget) => {
           loadProducts()
-          if (hitTarget) {
-            showToast('🎉 Parabéns! O item atingiu seu Preço Alvo!')
+          if (hitTarget && selectedProductForPrice) {
+            sendPriceAlertNotification(
+              selectedProductForPrice.name,
+              selectedProductForPrice.brand,
+              selectedProductForPrice.currentPrice,
+              selectedProductForPrice.targetPrice || 0
+            )
+            showToast('🎯 ALERTA: O item atingiu o seu Preço Alvo! Notificação disparada.')
           } else {
             showToast('Nova cotação registrada no histórico!')
           }

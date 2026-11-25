@@ -14,9 +14,11 @@ import {
   ChevronUp,
   Target,
   Sparkles,
+  ShoppingBag,
 } from 'lucide-react'
 import { Product } from '@/types/product'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { generateStoreLinks } from '@/lib/storeLinks'
 import PriceChart from './PriceChart'
 
 interface ProductCardProps {
@@ -31,16 +33,17 @@ export default function ProductCard({
   onDelete,
 }: ProductCardProps) {
   const [showHistory, setShowHistory] = useState(false)
+  const [showLinks, setShowLinks] = useState(false)
 
-  // Calcular variação do último registro em relação ao anterior
+  // Gerar links automáticos de busca por nome e marca
+  const autoStoreLinks = generateStoreLinks(product.name, product.brand)
+
   const history = product.priceHistory || []
   let priceDiffPercent: number | null = null
-  let priceDiffAbsolute: number | null = null
 
   if (history.length >= 2) {
     const lastPrice = history[history.length - 1].price
     const prevPrice = history[history.length - 2].price
-    priceDiffAbsolute = lastPrice - prevPrice
     priceDiffPercent = ((lastPrice - prevPrice) / prevPrice) * 100
   }
 
@@ -70,7 +73,7 @@ export default function ProductCard({
             {reachedTarget && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
                 <Sparkles className="w-3 h-3" />
-                Preço Alvo Atingido!
+                Alvo Atingido!
               </span>
             )}
           </div>
@@ -98,7 +101,6 @@ export default function ProductCard({
                   {formatCurrency(product.currentPrice)}
                 </span>
 
-                {/* Variação em relação ao registro anterior */}
                 {priceDiffPercent !== null && priceDiffPercent !== 0 && (
                   <span
                     className={`inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded ${
@@ -145,6 +147,40 @@ export default function ProductCard({
               <span className="text-neutral-300 font-medium">
                 {formatCurrency(product.highestPrice)}
               </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Links Automáticos de Lojas Encontradas */}
+        <div className="px-5 pt-3">
+          <div className="bg-neutral-950/60 p-3 rounded-xl border border-neutral-800/80">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
+                <ShoppingBag className="w-3.5 h-3.5 text-blue-400" />
+                Onde encontrar este item:
+              </span>
+              <button
+                onClick={() => setShowLinks(!showLinks)}
+                className="text-[11px] text-blue-400 hover:text-blue-300 transition"
+              >
+                {showLinks ? 'Menos lojas' : 'Todas as lojas'}
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {(showLinks ? autoStoreLinks : autoStoreLinks.slice(0, 3)).map((item) => (
+                <a
+                  key={item.storeName}
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border transition ${item.color}`}
+                  title={`Ver preços de ${product.name} no ${item.storeName}`}
+                >
+                  <span>{item.badgeText}</span>
+                  <ExternalLink className="w-3 h-3 opacity-70" />
+                </a>
+              ))}
             </div>
           </div>
         </div>
@@ -211,26 +247,13 @@ export default function ProductCard({
 
       {/* Ações do Card */}
       <div className="p-4 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {product.storeUrl && (
-            <a
-              href={product.storeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition"
-              title="Acessar página do produto"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          )}
-          <button
-            onClick={() => onDelete(product.id)}
-            className="p-2 rounded-xl text-neutral-500 hover:text-rose-400 hover:bg-rose-950/40 transition"
-            title="Excluir item monitorado"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={() => onDelete(product.id)}
+          className="p-2 rounded-xl text-neutral-500 hover:text-rose-400 hover:bg-rose-950/40 transition"
+          title="Excluir item monitorado"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
 
         <button
           onClick={() => onAddPrice(product)}
