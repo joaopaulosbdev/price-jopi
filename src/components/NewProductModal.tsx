@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X, PlusCircle, AlertCircle, Sparkles, Target, Tag } from 'lucide-react'
+import { X, PlusCircle, AlertCircle, Sparkles, Target, Tag, ArrowRight } from 'lucide-react'
 import { storage } from '@/lib/storage'
 import { generateStoreLinks } from '@/lib/storeLinks'
 
@@ -21,6 +21,8 @@ export default function NewProductModal({
   const [name, setName] = useState('')
   const [brand, setBrand] = useState('')
   const [customBrand, setCustomBrand] = useState('')
+  const [minPriceRange, setMinPriceRange] = useState('')
+  const [maxPriceRange, setMaxPriceRange] = useState('')
   const [targetPrice, setTargetPrice] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,7 +38,16 @@ export default function NewProductModal({
     setError(null)
 
     if (!name.trim()) {
-      setError('Por favor, informe o nome do item ou palavras-chave.')
+      setError('Por favor, informe o nome do item ou modelo.')
+      return
+    }
+
+    const minRange = minPriceRange ? Number(minPriceRange) : null
+    const maxRange = maxPriceRange ? Number(maxPriceRange) : null
+    const target = targetPrice ? Number(targetPrice) : null
+
+    if (minRange !== null && maxRange !== null && minRange > maxRange) {
+      setError('O valor mínimo do range não pode ser maior que o valor máximo.')
       return
     }
 
@@ -46,7 +57,9 @@ export default function NewProductModal({
       storage.addProduct({
         name: name.trim(),
         brand: effectiveBrand || null,
-        targetPrice: targetPrice ? Number(targetPrice) : null,
+        minPriceRange: minRange,
+        maxPriceRange: maxRange,
+        targetPrice: target,
         notes: notes.trim() || null,
       })
 
@@ -54,6 +67,8 @@ export default function NewProductModal({
       setName('')
       setBrand('')
       setCustomBrand('')
+      setMinPriceRange('')
+      setMaxPriceRange('')
       setTargetPrice('')
       setNotes('')
 
@@ -68,7 +83,7 @@ export default function NewProductModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-6 text-neutral-100 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-6 text-neutral-100 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-4 border-b border-neutral-800">
           <div className="flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-blue-500" />
@@ -86,10 +101,10 @@ export default function NewProductModal({
         <div className="mt-3.5 p-3.5 bg-blue-950/40 border border-blue-800/40 rounded-xl text-xs text-blue-200 space-y-1.5">
           <div className="flex items-center gap-1.5 font-semibold text-blue-300">
             <Sparkles className="w-4 h-4 text-blue-400 shrink-0" />
-            <span>Busca e Acompanhamento Automático</span>
+            <span>Range de Monitoramento & Alerta no Alvo</span>
           </div>
           <p className="text-neutral-300">
-            Você só precisa digitar o <strong>nome ou modelo do produto</strong>! O sistema gera links diretos para Mercado Livre, Amazon, Buscapé e Google Shopping para encontrar os preços.
+            Defina uma faixa de preço (ex: <strong>R$ 1.500 até R$ 2.000</strong>) para acompanhar no gráfico. O site <strong>só disparará a notificação quando atingir o Preço Alvo</strong> (ex: R$ 1.500).
           </p>
         </div>
 
@@ -101,29 +116,27 @@ export default function NewProductModal({
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          {/* Nome / Palavras-chave (Único campo obrigatório) */}
+          {/* Nome / Palavras-chave */}
           <div>
             <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
-              O que você deseja monitorar? (Nome / Palavras-chave) *
+              Nome do Produto / Palavras-chave *
             </label>
             <input
               type="text"
               required
               autoFocus
-              placeholder="ex: Galaxy S24 Ultra, PlayStation 5, Monitor 27 144Hz, Cafeteira..."
+              placeholder="ex: Monitor 27 144Hz, Galaxy S24, PlayStation 5..."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm font-medium shadow-inner"
+              className="w-full px-4 py-3 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm font-medium"
             />
           </div>
 
-          {/* Marca (Agora totalmente opcional) */}
+          {/* Marca (Opcional) */}
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1.5 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-neutral-400" />
-                Marca do Fabricante <span className="text-neutral-500 font-normal">(opcional)</span>
-              </span>
+            <label className="block text-xs font-medium text-neutral-400 mb-1.5 flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5 text-neutral-400" />
+              Marca do Fabricante <span className="text-neutral-500 font-normal">(opcional)</span>
             </label>
             <select
               value={brand}
@@ -141,7 +154,7 @@ export default function NewProductModal({
             {brand === '__new__' && (
               <input
                 type="text"
-                placeholder="Digite o nome da marca (ex: Dell, LG, Xiaomi...)"
+                placeholder="Nome da marca (ex: Dell, LG, Samsung...)"
                 value={customBrand}
                 onChange={(e) => setCustomBrand(e.target.value)}
                 className="mt-2 w-full px-3.5 py-2 bg-neutral-950 border border-neutral-700 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
@@ -149,31 +162,75 @@ export default function NewProductModal({
             )}
           </div>
 
-          {/* Preço Alvo / Desejado */}
-          <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1.5 flex items-center gap-1.5">
-              <Target className="w-3.5 h-3.5 text-emerald-400" />
-              Preço Alvo / Meta desejada (R$) <span className="text-neutral-500 font-normal">(opcional)</span>
+          {/* Range de Preço (De X até Y) */}
+          <div className="p-3.5 bg-neutral-950/70 border border-neutral-800 rounded-xl space-y-3">
+            <label className="block text-xs font-semibold text-neutral-300">
+              Range de Preço para o Gráfico (Faixa de Interesse)
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+              <div>
+                <span className="text-[11px] text-neutral-400 block mb-1">Preço Mínimo (R$)</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="ex: 1500"
+                  value={minPriceRange}
+                  onChange={(e) => {
+                    setMinPriceRange(e.target.value)
+                    // Sugerir automaticamente como target se estiver vazio
+                    if (!targetPrice) setTargetPrice(e.target.value)
+                  }}
+                  className="w-full px-3.5 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
+                />
+              </div>
+
+              <div>
+                <span className="text-[11px] text-neutral-400 block mb-1">Preço Máximo (R$)</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="ex: 2000"
+                  value={maxPriceRange}
+                  onChange={(e) => setMaxPriceRange(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
+                />
+              </div>
+            </div>
+            <p className="text-[11px] text-neutral-500 italic">
+              Exemplo: acompanhe flutuações entre R$ 1.500 e R$ 2.000 destacadas no gráfico.
+            </p>
+          </div>
+
+          {/* Preço Alvo Estrito para Notificação */}
+          <div className="p-3.5 bg-emerald-950/20 border border-emerald-900/40 rounded-xl space-y-2">
+            <label className="block text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
+              <Target className="w-4 h-4 text-emerald-400" />
+              Preço Alvo para Notificação (R$)
             </label>
             <input
               type="number"
               step="0.01"
               min="0"
-              placeholder="ex: 1500 (o site avisa com som e notificação quando atingir)"
+              placeholder="ex: 1500 (o alarme e a notificação SÓ disparam se chegar aqui)"
               value={targetPrice}
               onChange={(e) => setTargetPrice(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-emerald-500 text-sm font-semibold text-emerald-400"
+              className="w-full px-3.5 py-2.5 bg-neutral-950 border border-emerald-800/60 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-emerald-400 text-sm font-semibold text-emerald-400"
             />
+            <p className="text-[11px] text-emerald-400/80">
+              🔔 O alerta no navegador e o som <strong>só serão ativados</strong> quando o preço registrado for menor ou igual a este valor.
+            </p>
           </div>
 
           {/* Observações */}
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1.5">
-              Observações / Especificação <span className="text-neutral-500 font-normal">(opcional)</span>
+            <label className="block text-xs font-medium text-neutral-400 mb-1">
+              Observações <span className="text-neutral-500 font-normal">(opcional)</span>
             </label>
             <textarea
               rows={2}
-              placeholder="ex: Versão 256GB, cor preta, voltagem 110V..."
+              placeholder="ex: Versão com garantia, cor específica..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3.5 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500 text-sm"
@@ -183,8 +240,8 @@ export default function NewProductModal({
           {/* Prévia dos comparadores */}
           {name.trim() && (
             <div className="p-3 bg-neutral-950 rounded-xl border border-neutral-800">
-              <span className="text-[11px] text-neutral-400 block mb-1.5 font-medium">
-                Lojas onde o item será pesquisado automaticamente:
+              <span className="text-[11px] text-neutral-400 block mb-1 font-medium">
+                Links gerados automaticamente para pesquisa rápida:
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {previewLinks.map((p) => (

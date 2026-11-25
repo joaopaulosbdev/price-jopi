@@ -6,6 +6,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'PlayStation 5 Slim 1TB',
     brand: 'Sony',
     category: 'Games & Consoles',
+    minPriceRange: 3300.0,
+    maxPriceRange: 4000.0,
     targetPrice: 3400.0,
     imageUrl: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=400&q=80',
     notes: 'Edição com leitor de disco',
@@ -50,6 +52,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'iPhone 15 128GB',
     brand: 'Apple',
     category: 'Smartphones',
+    minPriceRange: 4200.0,
+    maxPriceRange: 5500.0,
     targetPrice: 4500.0,
     imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=400&q=80',
     notes: 'Cor Preto',
@@ -84,49 +88,14 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'prod-3',
-    name: 'Headphone WH-1000XM5 Cancelamento de Ruído',
-    brand: 'Sony',
-    category: 'Áudio',
-    targetPrice: 1900.0,
-    imageUrl: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=400&q=80',
-    notes: 'Melhor ANC do mercado',
-    currentPrice: 1989.00,
-    lowestPrice: 1989.00,
-    highestPrice: 2399.00,
-    createdAt: new Date(Date.now() - 35 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    priceHistory: [
-      {
-        id: 'h-3-1',
-        productId: 'prod-3',
-        price: 2399.00,
-        storeName: 'Amazon',
-        recordedAt: new Date(Date.now() - 35 * 86400000).toISOString(),
-      },
-      {
-        id: 'h-3-2',
-        productId: 'prod-3',
-        price: 2199.00,
-        storeName: 'Mercado Livre',
-        recordedAt: new Date(Date.now() - 15 * 86400000).toISOString(),
-      },
-      {
-        id: 'h-3-3',
-        productId: 'prod-3',
-        price: 1989.00,
-        storeName: 'Kabum',
-        recordedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-      },
-    ],
-  },
-  {
-    id: 'prod-4',
-    name: 'Monitor Gamer Odyssey G40 27" 240Hz IPS',
+    name: 'Monitor Gamer 27" 240Hz IPS',
     brand: 'Samsung',
     category: 'Informática',
+    minPriceRange: 1300.0,
+    maxPriceRange: 2000.0,
     targetPrice: 1500.0,
     imageUrl: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=400&q=80',
-    notes: 'G-Sync compatível',
+    notes: 'Range 1300 a 2000. Notificar em 1500',
     currentPrice: 1499.00,
     lowestPrice: 1499.00,
     highestPrice: 1899.00,
@@ -134,75 +103,38 @@ export const INITIAL_PRODUCTS: Product[] = [
     updatedAt: new Date().toISOString(),
     priceHistory: [
       {
-        id: 'h-4-1',
-        productId: 'prod-4',
+        id: 'h-3-1',
+        productId: 'prod-3',
         price: 1899.00,
         storeName: 'Kabum',
         recordedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
       },
       {
-        id: 'h-4-2',
-        productId: 'prod-4',
+        id: 'h-3-2',
+        productId: 'prod-3',
         price: 1749.00,
         storeName: 'Pichau',
         recordedAt: new Date(Date.now() - 30 * 86400000).toISOString(),
       },
       {
-        id: 'h-4-3',
-        productId: 'prod-4',
+        id: 'h-3-3',
+        productId: 'prod-3',
         price: 1599.00,
         storeName: 'Mercado Livre',
         recordedAt: new Date(Date.now() - 8 * 86400000).toISOString(),
       },
       {
-        id: 'h-4-4',
-        productId: 'prod-4',
+        id: 'h-3-4',
+        productId: 'prod-3',
         price: 1499.00,
         storeName: 'Amazon',
         recordedAt: new Date().toISOString(),
       },
     ],
   },
-  {
-    id: 'prod-5',
-    name: 'Cafeteira Nespresso Vertuo Pop',
-    brand: 'Nespresso',
-    category: 'Eletrodomésticos',
-    targetPrice: 400.0,
-    imageUrl: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=400&q=80',
-    notes: 'Cafés longos e expressos',
-    currentPrice: 429.00,
-    lowestPrice: 429.00,
-    highestPrice: 599.00,
-    createdAt: new Date(Date.now() - 40 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    priceHistory: [
-      {
-        id: 'h-5-1',
-        productId: 'prod-5',
-        price: 599.00,
-        storeName: 'Nespresso Store',
-        recordedAt: new Date(Date.now() - 40 * 86400000).toISOString(),
-      },
-      {
-        id: 'h-5-2',
-        productId: 'prod-5',
-        price: 499.00,
-        storeName: 'Amazon',
-        recordedAt: new Date(Date.now() - 20 * 86400000).toISOString(),
-      },
-      {
-        id: 'h-5-3',
-        productId: 'prod-5',
-        price: 429.00,
-        storeName: 'Mercado Livre',
-        recordedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-      },
-    ],
-  },
 ]
 
-const STORAGE_KEY = 'pricetracker_products_v2'
+const STORAGE_KEY = 'pricetracker_products_v3'
 
 export const storage = {
   getProducts: (): Product[] => {
@@ -232,6 +164,8 @@ export const storage = {
     name: string
     brand?: string | null
     category?: string | null
+    minPriceRange?: number | null
+    maxPriceRange?: number | null
     targetPrice?: number | null
     notes?: string | null
   }): Product => {
@@ -244,6 +178,8 @@ export const storage = {
       name: productData.name,
       brand: productData.brand || null,
       category: productData.category || null,
+      minPriceRange: productData.minPriceRange || null,
+      maxPriceRange: productData.maxPriceRange || null,
       targetPrice: productData.targetPrice || null,
       notes: productData.notes || null,
       currentPrice: null,
@@ -267,6 +203,7 @@ export const storage = {
     const updated = currentList.map((p) => {
       if (p.id !== productId) return p
 
+      // Só dispara notificação se atingir o preço alvo específico (targetPrice)
       if (p.targetPrice && price <= p.targetPrice) {
         hitTarget = true
       }

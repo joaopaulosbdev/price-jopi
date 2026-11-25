@@ -16,6 +16,7 @@ import {
   Sparkles,
   ShoppingBag,
   HelpCircle,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { Product } from '@/types/product'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -48,9 +49,18 @@ export default function ProductCard({
     priceDiffPercent = ((lastPrice - prevPrice) / prevPrice) * 100
   }
 
+  // Notificação e badge APENAS se atingir o preço alvo específico
   const reachedTarget = product.targetPrice && product.currentPrice !== null
     ? product.currentPrice <= product.targetPrice
     : false
+
+  // Verificar se o preço atual está dentro da faixa de interesse (range)
+  const isInRange =
+    product.currentPrice !== null &&
+    product.minPriceRange != null &&
+    product.maxPriceRange != null &&
+    product.currentPrice >= product.minPriceRange &&
+    product.currentPrice <= product.maxPriceRange
 
   const hasPrices = product.currentPrice !== null
 
@@ -78,7 +88,7 @@ export default function ProductCard({
               )}
             </div>
 
-            {/* Status do Alvo */}
+            {/* Status do Alvo Estrito */}
             {reachedTarget && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
                 <Sparkles className="w-3 h-3" />
@@ -98,7 +108,7 @@ export default function ProductCard({
           )}
         </div>
 
-        {/* Informações de Preço */}
+        {/* Informações de Preço, Range e Alvo */}
         <div className="px-5 py-3 bg-neutral-950/40 border-y border-neutral-800/60">
           <div className="flex items-baseline justify-between">
             <div>
@@ -141,7 +151,7 @@ export default function ProductCard({
               <div className="text-right">
                 <span className="text-[11px] text-neutral-400 uppercase tracking-wider flex items-center justify-end gap-1">
                   <Target className="w-3 h-3 text-emerald-400" />
-                  Meta
+                  Alvo (Notificação)
                 </span>
                 <span className="text-xs font-semibold text-emerald-400 block mt-0.5">
                   {formatCurrency(product.targetPrice)}
@@ -150,17 +160,32 @@ export default function ProductCard({
             )}
           </div>
 
+          {/* Range Configurado */}
+          {(product.minPriceRange || product.maxPriceRange) && (
+            <div className="mt-2.5 pt-2 border-t border-neutral-800/50 flex items-center justify-between text-xs">
+              <span className="text-neutral-400 flex items-center gap-1 text-[11px]">
+                <SlidersHorizontal className="w-3 h-3 text-blue-400" />
+                Range de Acompanhamento:
+              </span>
+              <span className={`font-medium text-[11px] ${isInRange ? 'text-blue-400 font-semibold' : 'text-neutral-300'}`}>
+                {product.minPriceRange ? formatCurrency(product.minPriceRange) : 'R$ 0'} até{' '}
+                {product.maxPriceRange ? formatCurrency(product.maxPriceRange) : '∞'}
+                {isInRange && ' (Dentro da faixa)'}
+              </span>
+            </div>
+          )}
+
           {/* Menor e Maior Preço Histórico */}
           {hasPrices && (
-            <div className="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-neutral-800/50 text-[11px]">
+            <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-neutral-800/50 text-[11px]">
               <div>
-                <span className="text-neutral-500">Mínimo Histórico:</span>{' '}
+                <span className="text-neutral-500">Mínimo Registrado:</span>{' '}
                 <span className="text-neutral-300 font-medium">
                   {formatCurrency(product.lowestPrice!)}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-neutral-500">Máximo Histórico:</span>{' '}
+                <span className="text-neutral-500">Máximo Registrado:</span>{' '}
                 <span className="text-neutral-300 font-medium">
                   {formatCurrency(product.highestPrice!)}
                 </span>
@@ -203,11 +228,13 @@ export default function ProductCard({
           </div>
         </div>
 
-        {/* Gráfico do Histórico */}
+        {/* Gráfico do Histórico com Range */}
         <div className="p-5 pt-3">
           <PriceChart
             history={product.priceHistory}
             targetPrice={product.targetPrice}
+            minPriceRange={product.minPriceRange}
+            maxPriceRange={product.maxPriceRange}
           />
 
           {/* Botão de Expansão da Tabela de Registros */}

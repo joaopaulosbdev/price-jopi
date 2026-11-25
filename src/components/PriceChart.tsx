@@ -10,6 +10,7 @@ import {
   Tooltip,
   CartesianGrid,
   ReferenceLine,
+  ReferenceArea,
 } from 'recharts'
 import { PriceHistory } from '@/types/product'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -17,13 +18,25 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 interface PriceChartProps {
   history: PriceHistory[]
   targetPrice?: number | null
+  minPriceRange?: number | null
+  maxPriceRange?: number | null
 }
 
-export default function PriceChart({ history, targetPrice }: PriceChartProps) {
+export default function PriceChart({
+  history,
+  targetPrice,
+  minPriceRange,
+  maxPriceRange,
+}: PriceChartProps) {
   if (!history || history.length === 0) {
     return (
-      <div className="h-44 flex items-center justify-center text-sm text-neutral-400 bg-neutral-900/40 rounded-xl border border-neutral-800">
-        Nenhum dado de histórico registrado
+      <div className="h-44 flex flex-col items-center justify-center text-xs text-neutral-400 bg-neutral-900/40 rounded-xl border border-neutral-800 p-4 text-center">
+        <span>Nenhum preço registrado ainda.</span>
+        <span className="text-neutral-500 text-[11px] mt-1">
+          {minPriceRange && maxPriceRange
+            ? `Range monitorado: ${formatCurrency(minPriceRange)} até ${formatCurrency(maxPriceRange)}`
+            : 'Adicione a primeira cotação no botão abaixo.'}
+        </span>
       </div>
     )
   }
@@ -40,25 +53,44 @@ export default function PriceChart({ history, targetPrice }: PriceChartProps) {
     }
   })
 
-  const minPrice = Math.min(...history.map((h) => h.price))
-  const maxPrice = Math.max(...history.map((h) => h.price))
-  const padding = (maxPrice - minPrice) * 0.15 || 50
-  const yDomainMin = Math.max(0, Math.floor(minPrice - padding))
-  const yDomainMax = Math.ceil(maxPrice + padding)
+  // Calcular limites do eixo Y considerando preços registrados e os limites do Range configurado
+  const allValues = [
+    ...history.map((h) => h.price),
+    ...(minPriceRange ? [minPriceRange] : []),
+    ...(maxPriceRange ? [maxPriceRange] : []),
+    ...(targetPrice ? [targetPrice] : []),
+  ]
+
+  const minVal = Math.min(...allValues)
+  const maxVal = Math.max(...allValues)
+  const padding = (maxVal - minVal) * 0.12 || 40
+  const yDomainMin = Math.max(0, Math.floor(minVal - padding))
+  const yDomainMax = Math.ceil(maxVal + padding)
 
   return (
-    <div className="w-full h-52 bg-neutral-900/60 p-3 rounded-xl border border-neutral-800/80 flex flex-col justify-between">
-      <div className="flex items-center justify-between text-xs text-neutral-400 mb-1 px-1">
-        <span>Histórico de Evolução</span>
-        {targetPrice && (
-          <span className="text-emerald-400 font-medium flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            Alvo: {formatCurrency(targetPrice)}
-          </span>
-        )}
+    <div className="w-full bg-neutral-900/60 p-3 rounded-xl border border-neutral-800/80 flex flex-col justify-between">
+      {/* Legendas de Range e Preço Alvo */}
+      <div className="flex flex-wrap items-center justify-between text-[11px] text-neutral-400 mb-2 gap-2 px-1">
+        <span className="font-medium text-neutral-300">Evolução no Gráfico</span>
+
+        <div className="flex items-center gap-2.5">
+          {minPriceRange && maxPriceRange && (
+            <span className="text-blue-400 flex items-center gap-1 bg-blue-950/40 px-2 py-0.5 rounded border border-blue-900/40">
+              <span className="w-2 h-2 rounded-sm bg-blue-500/50"></span>
+              Range: {formatCurrency(minPriceRange)} - {formatCurrency(maxPriceRange)}
+            </span>
+          )}
+
+          {targetPrice && (
+            <span className="text-emerald-400 font-medium flex items-center gap-1 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/40">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Alvo: {formatCurrency(targetPrice)}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="w-full h-40">
+      <div className="w-full h-44">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
             <defs>
@@ -94,20 +126,47 @@ export default function PriceChart({ history, targetPrice }: PriceChartProps) {
                         {formatCurrency(item.preco)}
                       </p>
                       <p className="text-neutral-300">Loja: {item.store}</p>
+                      {targetPrice && (
+                        <p className={`text-[10px] font-semibold ${item.preco <= targetPrice ? 'text-emerald-400' : 'text-neutral-500'}`}>
+                          {item.preco <= targetPrice ? '🎯 Preço alvo atingido!' : `Meta: ${formatCurrency(targetPrice)}`}
+                        </p>
+                      )}
                     </div>
                   )
                 }
                 return null
               }}
             />
+
+            {/* Faixa visual do Range de Preço (ex: 1500 até 2000) */}
+            {minPriceRange && maxPriceRange && (
+              <ReferenceArea
+                y1={minPriceRange}
+                y2={maxPriceRange}
+                fill="#3b82f6"
+                fillOpacity={0.08}
+                stroke="#3b82f6"
+                strokeOpacity={0.25}
+                strokeDasharray="2 2"
+              />
+            )}
+
+            {/* Linha de Notificação Estrita no Preço Alvo (ex: 1500) */}
             {targetPrice && (
               <ReferenceLine
                 y={targetPrice}
                 stroke="#10b981"
                 strokeDasharray="4 4"
-                strokeWidth={1.5}
+                strokeWidth={2}
+                label={{
+                  value: `Alvo: R$${targetPrice}`,
+                  position: 'insideTopLeft',
+                  fill: '#10b981',
+                  fontSize: 10,
+                }}
               />
             )}
+
             <Area
               type="monotone"
               dataKey="preco"

@@ -12,7 +12,9 @@ export interface Product {
   name: string
   brand?: string | null
   category?: string | null
-  targetPrice?: number | null
+  minPriceRange?: number | null  // Faixa mínima de monitoramento (ex: 1500)
+  maxPriceRange?: number | null  // Faixa máxima de monitoramento (ex: 2000)
+  targetPrice?: number | null    // Preço alvo específico para notificação (ex: 1500)
   imageUrl?: string | null
   storeUrl?: string | null
   notes?: string | null
