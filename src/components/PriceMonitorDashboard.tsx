@@ -401,6 +401,13 @@ export default function PriceMonitorDashboard() {
                 onAddPrice={(prod) => setSelectedProductForPrice(prod)}
                 onEdit={(prod) => setSelectedProductForEdit(prod)}
                 onDelete={handleDelete}
+                onOffersUpdated={(searched, offerSearch) => {
+                  const current = storage.getProducts().find(product => product.id === searched.id)
+                  if (current && current.name === searched.name && current.brand === searched.brand &&
+                    current.minPriceRange === searched.minPriceRange && current.maxPriceRange === searched.maxPriceRange) {
+                    setProducts(storage.updateProduct(searched.id, { offerSearch }))
+                  }
+                }}
               />
             ))}
           </div>
@@ -413,7 +420,7 @@ export default function PriceMonitorDashboard() {
         onClose={() => setIsNewModalOpen(false)}
         onSuccess={() => {
           loadProducts()
-          showToast('Novo item cadastrado com busca automática de lojas!')
+          showToast('Novo item cadastrado!')
         }}
         existingBrands={brands}
       />

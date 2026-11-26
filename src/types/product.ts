@@ -7,6 +7,17 @@ export interface PriceHistory {
   notes?: string | null
 }
 
+export interface ProductOffer {
+  title: string
+  price: number
+  store: string
+  url: string
+}
+
+export type OfferSearchResult =
+  | { status: 'ready' | 'partial'; offers: ProductOffer[] }
+  | { status: 'unavailable' }
+
 export interface Product {
   id: string
   name: string
@@ -24,4 +35,5 @@ export interface Product {
   createdAt: string
   updatedAt: string
   priceHistory: PriceHistory[]
+  offerSearch?: OfferSearchResult
 }

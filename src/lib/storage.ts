@@ -168,6 +168,7 @@ export const storage = {
     maxPriceRange?: number | null
     targetPrice?: number | null
     notes?: string | null
+    offerSearch?: Product['offerSearch']
   }): Product => {
     const currentList = storage.getProducts()
     const id = 'prod-' + Date.now()
@@ -188,6 +189,7 @@ export const storage = {
       createdAt: now,
       updatedAt: now,
       priceHistory: [],
+      offerSearch: productData.offerSearch,
     }
 
     const updated = [newProduct, ...currentList]
@@ -246,6 +248,7 @@ export const storage = {
       maxPriceRange: number | null
       targetPrice: number | null
       notes: string | null
+      offerSearch: Product['offerSearch']
     }>
   ): Product[] => {
     const currentList = storage.getProducts()

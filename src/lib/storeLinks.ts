@@ -3,7 +3,7 @@ export interface StoreSearchLink {
   url: string
   color: string
   badgeText: string
-  iconType: 'amazon' | 'mercadolivre' | 'google' | 'buscape' | 'kabum' | 'magalu'
+  iconType: 'amazon' | 'mercadolivre' | 'shopee' | 'google' | 'buscape' | 'kabum' | 'magalu'
 }
 
 /**
@@ -21,6 +21,13 @@ export function generateStoreLinks(name: string, brand?: string): StoreSearchLin
       color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20 hover:bg-yellow-500/20',
       badgeText: 'Mercado Livre',
       iconType: 'mercadolivre',
+    },
+    {
+      storeName: 'Shopee',
+      url: `https://shopee.com.br/search?keyword=${encodedQuery}`,
+      color: 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20',
+      badgeText: 'Shopee',
+      iconType: 'shopee',
     },
     {
       storeName: 'Amazon Brasil',

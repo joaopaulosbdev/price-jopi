@@ -22,13 +22,16 @@ import {
 import { Product } from '@/types/product'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { generateStoreLinks } from '@/lib/storeLinks'
+import { searchOffers } from '@/lib/offers'
 import PriceChart from './PriceChart'
+import OffersChart from './OffersChart'
 
 interface ProductCardProps {
   product: Product
   onAddPrice: (product: Product) => void
   onEdit: (product: Product) => void
   onDelete: (id: string) => void
+  onOffersUpdated: (product: Product, result: NonNullable<Product['offerSearch']>) => void
 }
 
 export default function ProductCard({
@@ -36,9 +39,20 @@ export default function ProductCard({
   onAddPrice,
   onEdit,
   onDelete,
+  onOffersUpdated,
 }: ProductCardProps) {
   const [showHistory, setShowHistory] = useState(false)
   const [showLinks, setShowLinks] = useState(false)
+  const [searching, setSearching] = useState(false)
+
+  const handleSearchOffers = async () => {
+    setSearching(true)
+    try {
+      onOffersUpdated(product, await searchOffers(product))
+    } finally {
+      setSearching(false)
+    }
+  }
 
   // Gerar links automáticos de busca por nome e marca
   const autoStoreLinks = generateStoreLinks(product.name, product.brand || undefined)
@@ -232,15 +246,21 @@ export default function ProductCard({
         </div>
 
         {/* Gráfico do Histórico com Range e Pontos Clicáveis */}
-        <div className="p-5 pt-3">
-          <PriceChart
+        <div className="p-5 pt-3 space-y-3">
+          <OffersChart
+            result={product.offerSearch}
+            target={product.targetPrice}
+            searching={searching}
+            onSearch={handleSearchOffers}
+          />
+          {(history.length > 0 || !product.offerSearch) && <PriceChart
             productName={product.name}
             history={product.priceHistory}
             targetPrice={product.targetPrice}
             minPriceRange={product.minPriceRange}
             maxPriceRange={product.maxPriceRange}
             storeLinks={autoStoreLinks}
-          />
+          />}
 
           {/* Botão de Expansão da Tabela de Registros */}
           {history.length > 0 && (

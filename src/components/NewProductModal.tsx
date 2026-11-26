@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { X, PlusCircle, AlertCircle, Sparkles, Target, Tag } from 'lucide-react'
 import { storage } from '@/lib/storage'
 import { generateStoreLinks } from '@/lib/storeLinks'
+import { searchOffers } from '@/lib/offers'
 
 interface NewProductModalProps {
   isOpen: boolean
@@ -54,14 +55,16 @@ export default function NewProductModal({
     setLoading(true)
 
     try {
-      storage.addProduct({
+      const product = {
         name: name.trim(),
         brand: effectiveBrand || null,
         minPriceRange: minRange,
         maxPriceRange: maxRange,
         targetPrice: target,
         notes: notes.trim() || null,
-      })
+      }
+      const offerSearch = await searchOffers(product)
+      storage.addProduct({ ...product, offerSearch })
 
       // Reset
       setName('')
@@ -91,6 +94,7 @@ export default function NewProductModal({
           </div>
           <button
             onClick={onClose}
+            disabled={loading}
             className="p-1 rounded-lg text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition"
           >
             <X className="w-5 h-5" />
@@ -104,7 +108,7 @@ export default function NewProductModal({
             <span>Range de Monitoramento & Alerta no Alvo</span>
           </div>
           <p className="text-neutral-300">
-            Defina uma faixa de preço (ex: <strong>R$ 1.500 até R$ 2.000</strong>) para acompanhar no gráfico. O site <strong>só disparará a notificação quando atingir o Preço Alvo</strong> (ex: R$ 1.500).
+            Ao cadastrar, o site busca ofertas na faixa informada e mostra o menor preço encontrado por modelo. Defina um preço-alvo para destacar as ofertas que atingirem esse valor.
           </p>
         </div>
 
@@ -271,7 +275,7 @@ export default function NewProductModal({
               className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-blue-500/20 disabled:opacity-50 flex items-center gap-1.5"
             >
               <PlusCircle className="w-4 h-4" />
-              {loading ? 'Cadastrando...' : 'Começar a Monitorar'}
+              {loading ? 'Buscando ofertas...' : 'Começar a Monitorar'}
             </button>
           </div>
         </form>

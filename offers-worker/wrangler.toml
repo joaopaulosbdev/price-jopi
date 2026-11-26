@@ -1,0 +1,6 @@
+name = "price-jopi-offers"
+main = "index.mjs"
+compatibility_date = "2026-11-25"
+
+[vars]
+SITE_ORIGIN = "https://joaopaulosbdev.github.io"

@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { X, Edit3, AlertCircle, Save, Target, Tag, SlidersHorizontal } from 'lucide-react'
 import { Product } from '@/types/product'
 import { storage } from '@/lib/storage'
+import { searchOffers } from '@/lib/offers'
 
 interface EditProductModalProps {
   product: Product
@@ -51,14 +52,18 @@ export default function EditProductModal({
     setLoading(true)
 
     try {
-      storage.updateProduct(product.id, {
+      const updates = {
         name: name.trim(),
         brand: effectiveBrand || null,
         minPriceRange: minRange,
         maxPriceRange: maxRange,
         targetPrice: target,
         notes: notes.trim() || null,
-      })
+      }
+      const searchChanged = updates.name !== product.name || updates.brand !== (product.brand ?? null) ||
+        minRange !== (product.minPriceRange ?? null) || maxRange !== (product.maxPriceRange ?? null)
+      const offerSearch = searchChanged ? await searchOffers(updates) : product.offerSearch
+      storage.updateProduct(product.id, { ...updates, offerSearch })
 
       onSuccess()
       onClose()
@@ -79,6 +84,7 @@ export default function EditProductModal({
           </div>
           <button
             onClick={onClose}
+            disabled={loading}
             className="p-1 rounded-lg text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition"
           >
             <X className="w-5 h-5" />
