@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X, PlusCircle, AlertCircle, Sparkles, Target, Tag, ArrowRight } from 'lucide-react'
+import { X, PlusCircle, AlertCircle, Sparkles, Target, Tag } from 'lucide-react'
 import { storage } from '@/lib/storage'
 import { generateStoreLinks } from '@/lib/storeLinks'
 
@@ -74,8 +74,8 @@ export default function NewProductModal({
 
       onSuccess()
       onClose()
-    } catch (err: any) {
-      setError(err.message || 'Erro ao cadastrar produto')
+    } catch (err) {
+      setError((err instanceof Error && err.message) || 'Erro ao cadastrar produto')
     } finally {
       setLoading(false)
     }

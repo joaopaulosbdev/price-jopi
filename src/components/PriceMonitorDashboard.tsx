@@ -49,10 +49,11 @@ export default function PriceMonitorDashboard() {
   }
 
   useEffect(() => {
-    loadProducts()
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setNotificationsEnabled(Notification.permission === 'granted')
-    }
+    const timer = window.setTimeout(() => {
+      loadProducts()
+      setNotificationsEnabled('Notification' in window && Notification.permission === 'granted')
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [])
 
   const handleEnableNotifications = async () => {
@@ -88,13 +89,15 @@ export default function PriceMonitorDashboard() {
     }
 
     result.sort((a, b) => {
-      let valA: any
-      let valB: any
+      let valA: string | number
+      let valB: string | number
 
       if (sortBy === 'name') {
         valA = a.name.toLowerCase()
         valB = b.name.toLowerCase()
       } else if (sortBy === 'currentPrice') {
+        if (a.currentPrice === null) return b.currentPrice === null ? 0 : 1
+        if (b.currentPrice === null) return -1
         valA = a.currentPrice
         valB = b.currentPrice
       } else {
@@ -435,16 +438,18 @@ export default function PriceMonitorDashboard() {
         }}
       />
 
-      <EditProductModal
-        product={selectedProductForEdit}
-        isOpen={!!selectedProductForEdit}
-        onClose={() => setSelectedProductForEdit(null)}
-        onSuccess={() => {
-          loadProducts()
-          showToast('Item atualizado com sucesso!')
-        }}
-        existingBrands={brands}
-      />
+      {selectedProductForEdit && (
+        <EditProductModal
+          key={selectedProductForEdit.id}
+          product={selectedProductForEdit}
+          onClose={() => setSelectedProductForEdit(null)}
+          onSuccess={() => {
+            loadProducts()
+            showToast('Item atualizado com sucesso!')
+          }}
+          existingBrands={brands}
+        />
+      )}
     </div>
   )
 }

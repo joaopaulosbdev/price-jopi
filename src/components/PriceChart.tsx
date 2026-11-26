@@ -64,9 +64,6 @@ export default function PriceChart({
     })
   } else {
     // Quando não há leituras ainda, criamos a escala de partida baseada no Range e no Alvo!
-    const baselineMin = minPriceRange || (targetPrice ? targetPrice * 0.9 : 1000)
-    const baselineMax = maxPriceRange || (targetPrice ? targetPrice * 1.3 : 2000)
-
     chartData = [
       {
         date: 'Início',
@@ -101,14 +98,6 @@ export default function PriceChart({
   const yDomainMin = Math.max(0, Math.floor(minVal - padding))
   const yDomainMax = Math.ceil(maxVal + padding)
 
-  const handlePointClick = (data: any) => {
-    if (data && data.url) {
-      window.open(data.url, '_blank', 'noopener,noreferrer')
-    } else {
-      window.open(defaultStoreUrl, '_blank', 'noopener,noreferrer')
-    }
-  }
-
   return (
     <div className="w-full bg-neutral-900/60 p-3 rounded-xl border border-neutral-800/80 flex flex-col justify-between">
       {/* Legendas de Range e Preço Alvo */}
@@ -140,12 +129,9 @@ export default function PriceChart({
           <AreaChart
             data={chartData}
             margin={{ top: 12, right: 12, left: -15, bottom: 0 }}
-            onClick={(e: any) => {
-              if (e && e.activePayload && e.activePayload.length) {
-                handlePointClick(e.activePayload[0].payload)
-              } else {
-                window.open(defaultStoreUrl, '_blank', 'noopener,noreferrer')
-              }
+            onClick={({ activeTooltipIndex }) => {
+              const point = activeTooltipIndex == null ? undefined : chartData[Number(activeTooltipIndex)]
+              window.open(point?.url ?? defaultStoreUrl, '_blank', 'noopener,noreferrer')
             }}
           >
             <defs>

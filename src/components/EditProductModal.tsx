@@ -1,13 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { X, Edit3, AlertCircle, Save, Target, Tag, SlidersHorizontal } from 'lucide-react'
 import { Product } from '@/types/product'
 import { storage } from '@/lib/storage'
 
 interface EditProductModalProps {
-  product: Product | null
-  isOpen: boolean
+  product: Product
   onClose: () => void
   onSuccess: () => void
   existingBrands: string[]
@@ -15,35 +14,19 @@ interface EditProductModalProps {
 
 export default function EditProductModal({
   product,
-  isOpen,
   onClose,
   onSuccess,
   existingBrands,
 }: EditProductModalProps) {
-  const [name, setName] = useState('')
-  const [brand, setBrand] = useState('')
+  const [name, setName] = useState(product.name)
+  const [brand, setBrand] = useState(product.brand ?? '')
   const [customBrand, setCustomBrand] = useState('')
-  const [minPriceRange, setMinPriceRange] = useState('')
-  const [maxPriceRange, setMaxPriceRange] = useState('')
-  const [targetPrice, setTargetPrice] = useState('')
-  const [notes, setNotes] = useState('')
+  const [minPriceRange, setMinPriceRange] = useState(String(product.minPriceRange ?? ''))
+  const [maxPriceRange, setMaxPriceRange] = useState(String(product.maxPriceRange ?? ''))
+  const [targetPrice, setTargetPrice] = useState(String(product.targetPrice ?? ''))
+  const [notes, setNotes] = useState(product.notes ?? '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (product) {
-      setName(product.name || '')
-      setBrand(product.brand || '')
-      setCustomBrand('')
-      setMinPriceRange(product.minPriceRange ? String(product.minPriceRange) : '')
-      setMaxPriceRange(product.maxPriceRange ? String(product.maxPriceRange) : '')
-      setTargetPrice(product.targetPrice ? String(product.targetPrice) : '')
-      setNotes(product.notes || '')
-      setError(null)
-    }
-  }, [product])
-
-  if (!isOpen || !product) return null
 
   const effectiveBrand = brand === '__new__' ? customBrand.trim() : brand.trim()
 
@@ -79,8 +62,8 @@ export default function EditProductModal({
 
       onSuccess()
       onClose()
-    } catch (err: any) {
-      setError(err.message || 'Erro ao atualizar produto')
+    } catch (err) {
+      setError((err instanceof Error && err.message) || 'Erro ao atualizar produto')
     } finally {
       setLoading(false)
     }

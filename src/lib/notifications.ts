@@ -21,7 +21,10 @@ export async function requestNotificationPermission(): Promise<boolean> {
 export function playAlertSound() {
   try {
     if (typeof window === 'undefined') return
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const AudioContext = window.AudioContext ??
+      (window as Window & { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext
+    if (!AudioContext) return
+    const ctx = new AudioContext()
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
 
@@ -37,7 +40,7 @@ export function playAlertSound() {
 
     osc.start()
     osc.stop(ctx.currentTime + 0.4)
-  } catch (e) {
+  } catch {
     // Audio pode ser bloqueado antes de interação do usuário
   }
 }

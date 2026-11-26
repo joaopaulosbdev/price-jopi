@@ -52,8 +52,8 @@ export default function UpdatePriceModal({
       setNotes('')
       onSuccess(hitTarget)
       onClose()
-    } catch (err: any) {
-      setError(err.message || 'Erro ao registrar cotação')
+    } catch (err) {
+      setError((err instanceof Error && err.message) || 'Erro ao registrar cotação')
     } finally {
       setLoading(false)
     }
